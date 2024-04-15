@@ -65,8 +65,8 @@ pub struct ExecutionPayloadInputV2 {
     #[serde(flatten)]
     pub execution_payload: ExecutionPayloadV1,
     /// The payload withdrawals
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub withdrawals: Option<Vec<Withdrawal>>,
+    #[serde(default)]
+    pub withdrawals: Vec<Withdrawal>,
 }
 
 /// This structure maps for the return value of `engine_getPayload` of the beacon chain spec, for
@@ -1084,7 +1084,7 @@ mod tests {
 }
         "#;
         let payload: ExecutionPayloadInputV2 = serde_json::from_str(response).unwrap();
-        assert_eq!(payload.withdrawals, Some(vec![]));
+        assert_eq!(payload.withdrawals, vec![]);
 
         let response = r#"
 {
@@ -1112,7 +1112,7 @@ mod tests {
 }
         "#;
         let payload: ExecutionPayloadInputV2 = serde_json::from_str(response).unwrap();
-        assert_eq!(payload.withdrawals, None);
+        assert_eq!(payload.withdrawals, vec![]);
     }
 
     #[test]
