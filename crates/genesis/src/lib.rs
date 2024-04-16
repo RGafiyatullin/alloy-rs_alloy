@@ -20,6 +20,8 @@
 
 extern crate alloc;
 
+use std::collections::HashMap;
+
 use alloc::collections::BTreeMap;
 
 use alloy_primitives::{Address, Bytes, B256, U256};
@@ -33,10 +35,10 @@ use serde::{Deserialize, Serialize};
 /// The genesis block specification.
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", default)]
-pub struct Genesis {
+pub struct Genesis<ExtraConfig = ()> {
     /// The fork configuration for this network.
     #[serde(default)]
-    pub config: ChainConfig,
+    pub config: ChainConfig<ExtraConfig>,
     /// The genesis header nonce.
     #[serde(with = "u64_hex")]
     pub nonce: u64,
@@ -273,7 +275,7 @@ impl GenesisAccount {
 /// for the source of each field.
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default, rename_all = "camelCase")]
-pub struct ChainConfig {
+pub struct ChainConfig<Extra = ()> {
     /// The network's chain ID.
     #[serde(default = "mainnet_id")]
     pub chain_id: u64,
@@ -422,6 +424,9 @@ pub struct ChainConfig {
     /// Clique parameters.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub clique: Option<CliqueConfig>,
+
+    #[serde(flatten)]
+    pub extra: Extra,
 }
 
 impl ChainConfig {
