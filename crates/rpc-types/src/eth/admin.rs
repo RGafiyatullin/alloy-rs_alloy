@@ -10,7 +10,9 @@ use std::{
 /// This includes general information about a running node, spanning networking and protocol
 /// details.
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct NodeInfo {
+pub struct NodeInfo<Extra = ()> 
+where Extra: Default
+{
     /// Unique node identifier.
     pub id: B256,
     /// The node's user agent, containing a client name, version, OS, and other metadata.
@@ -27,7 +29,7 @@ pub struct NodeInfo {
     #[serde(rename = "listenAddr")]
     pub listen_addr: SocketAddr,
     /// The protocols that the node supports, with protocol metadata.
-    pub protocols: ProtocolInfo,
+    pub protocols: ProtocolInfo<Extra>,
 }
 
 /// Represents a node's discovery and listener ports.
@@ -43,10 +45,12 @@ pub struct Ports {
 ///
 /// This contains protocol information reported by the connected RPC node.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub struct ProtocolInfo {
+pub struct ProtocolInfo<Extra = ()> 
+where Extra: Default
+{
     /// Details about the node's supported eth protocol. `None` if unsupported
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub eth: Option<EthProtocolInfo>,
+    pub eth: Option<EthProtocolInfo<Extra>>,
     /// Details about the node's supported snap protocol. `None` if unsupported
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub snap: Option<SnapProtocolInfo>,
@@ -58,7 +62,9 @@ pub struct ProtocolInfo {
 /// struct](https://github.com/ethereum/go-ethereum/blob/c2e0abce2eedc1ba2a1b32c46fd07ef18a25354a/eth/protocols/eth/handler.go#L129)
 /// for how these fields are determined.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub struct EthProtocolInfo {
+pub struct EthProtocolInfo<Extra = ()> 
+where Extra: Default
+{
     /// The eth network version.
     pub network: u64,
     /// The total difficulty of the host's blockchain.
@@ -66,7 +72,7 @@ pub struct EthProtocolInfo {
     /// The Keccak hash of the host's genesis block.
     pub genesis: B256,
     /// The chain configuration for the host's fork rules.
-    pub config: ChainConfig,
+    pub config: ChainConfig<Extra>,
     /// The hash of the host's best known block.
     pub head: B256,
 }
