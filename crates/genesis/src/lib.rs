@@ -33,10 +33,11 @@ use serde::{Deserialize, Serialize};
 /// The genesis block specification.
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", default)]
-pub struct Genesis {
+#[serde(bound = "C: Default + ::serde::Serialize + ::serde::de::DeserializeOwned")]
+pub struct Genesis<C = ChainConfig> {
     /// The fork configuration for this network.
     #[serde(default)]
-    pub config: ChainConfig,
+    pub config: C,
     /// The genesis header nonce.
     #[serde(with = "u64_hex")]
     pub nonce: u64,
@@ -77,12 +78,12 @@ pub struct Genesis {
     pub number: Option<u64>,
 }
 
-impl Genesis {
+impl Genesis<ChainConfig>{
     /// Creates a chain config for Clique using the given chain id.
     /// and funds the given address with max coins.
     ///
     /// Enables all hard forks up to London at genesis.
-    pub fn clique_genesis(chain_id: u64, signer_addr: Address) -> Genesis {
+    pub fn clique_genesis(chain_id: u64, signer_addr: Address) -> Self {
         // set up a clique config with an instant sealing period and short (8 block) epoch
         let clique_config = CliqueConfig { period: Some(0), epoch: Some(8) };
 
@@ -129,7 +130,7 @@ impl Genesis {
         let extra_data_bytes = [&[0u8; 32][..], signer_addr.as_slice(), &[0u8; 65][..]].concat();
         let extra_data = Bytes::from(extra_data_bytes);
 
-        Genesis {
+        Self {
             config,
             alloc,
             difficulty: U256::from(1),
@@ -138,6 +139,10 @@ impl Genesis {
             ..Default::default()
         }
     }
+}
+
+impl<C> Genesis<C> {
+    
 
     /// Set the nonce.
     pub const fn with_nonce(mut self, nonce: u64) -> Self {
@@ -546,7 +551,7 @@ mod tests {
 
     #[test]
     fn test_genesis() {
-        let default_genesis = Genesis::default();
+        let default_genesis: Genesis = Default::default();
 
         let nonce = 999;
         let timestamp = 12345;
